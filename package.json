@@ -1,0 +1,19 @@
+{
+  "name": "ack-chat",
+  "version": "1.0.0",
+  "description": "Javascript chat",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ack-Chat/ack.git"
+  },
+  "author": "Jane Jiang, Tucker Chase, Marcelo Nazario",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Ack-Chat/ack/issues"
+  },
+  "homepage": "https://github.com/Ack-Chat/ack#readme"
+}
