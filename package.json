@@ -1,5 +1,5 @@
 {
-  "name": "ack",
+"name": "ack-ack",
   "version": "1.0.0",
   "description": "Chat web app using Node.js and Socket.io",
   "main": "server.js",
@@ -11,7 +11,7 @@
     "type": "git",
     "url": "git+https://github.com/Ack-Chat/ack.git"
   },
-  "author": "Jane Jiang, Marcelo Nazario, Chase Tucker",
+  "author": "Jane Jiang, Tucker Chase, Marcelo Nazario",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/Ack-Chat/ack/issues"
