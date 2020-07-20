@@ -6,7 +6,7 @@ var io = require("socket.io")(http);
 app.use(express.static("public"));
 
 app.get("/", (req, res) => {
-  res.send("index");
+  res.send("login");
 });
 
 io.on("connection", (socket) => {
@@ -14,6 +14,10 @@ io.on("connection", (socket) => {
   socket.on("message", (msg) => {
     console.log("message: " + msg);
     io.emit("message", msg);
+  });
+  socket.on("username", (username) => {
+    console.log("username: " + username);
+    socket.broadcast.emit("username", username);
   });
   socket.on("disconnect", () => {
     console.log("user disconnected");
