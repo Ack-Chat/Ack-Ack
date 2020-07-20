@@ -18,14 +18,31 @@
     <header>
       <h2 class="text-center pt-2">Ack Chat!</h2>
     </header>
+    <div id="username-form" class="container mt-4">
+      <form id="login" class="form-inline m-2 my-lg-0 p-2 bg-secondary row">
+        <input
+          id="username"
+          name="username"
+          class="form-control ml-3 mr-sm-2 w-75 col"
+          type="text"
+          placeholder="Please enter a username"
+          aria-label="Username"
+        />
+        <input
+          class="btn btn-success mr-2 my-2 my-sm-0 col-2"
+          type="submit"
+          value="Submit"
+        />
+      </form>
+    </div>
     <!-- Chat messages container -->
-    <div class="container-fluid bg-secondary p-3">
-      <div class="container-fluid bg-white">
+    <div id="chat-messages" class="container-fluid bg-secondary p-3 hide">
+      <div class="container-fluid bg-white p-0 m-0">
         <ul id="chat-list"></ul>
       </div>
     </div>
     <!-- Chat bar container -->
-    <div class="container-fluid">
+    <div id="chat-bar-container" class="container-fluid hide">
       <form
         id="chat-bar"
         class="form-inline my-2 my-lg-0 chat-bar bg-secondary row"
