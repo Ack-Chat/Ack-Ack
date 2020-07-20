@@ -25,3 +25,15 @@ socket.on("message", (msg) => {
 // socket.on("message", (msg) => {
 //   $("#chat-list").append($("<li>").text(msg));
 // });
+
+// event listener for username
+$("#login").submit((e) => {
+  e.preventDefault();
+  socket.emit("username", $("#username").val());
+  return false;
+});
+
+// add username message to chat list
+socket.on("username", (username) => {
+  $("#chat-list").append($("<li>").text(`${username} joined the chat`));
+});
