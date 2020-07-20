@@ -31,9 +31,9 @@ socket.on("message", (msg) => {
 $("#login").submit((e) => {
   e.preventDefault();
   username = $("#username").val();
-  $("#username-form").toggleClass("hide");
-  $("#chat-messages").toggleClass("hide");
+  $("#chat-section").toggleClass("hide");
   $("#chat-bar-container").toggleClass("hide");
+  $("#username-form").toggleClass("hide");
   socket.emit("username", username);
   $("#message").focus();
   return false;
@@ -41,6 +41,7 @@ $("#login").submit((e) => {
 
 // add username message to chat list
 socket.on("username", (name) => {
+  $("#users-list").append($("<li>").text(name));
   if (name === username) {
     addChat(`${name} joined the chat`, "right");
   } else {

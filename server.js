@@ -23,7 +23,7 @@ io.on("connection", (socket) => {
   });
   socket.on("username", (username) => {
     socket.username = username;
-    socket.broadcast.emit("username", username);
+    io.emit("username", username);
   });
   socket.on("disconnect", () => {});
 });
