@@ -10,18 +10,18 @@ $("#chat-bar").submit((e) => {
   return false;
 });
 
-// socket.on("message", (msg) => {
-//   console.log(`message: ${msg}`);
-//   let li = $("<li>").text(val);
-//   if (even) {
-//     $("#chat-list").append($("<li>").text(msg).addClass("bg-white"));
-//     even = !even;
-//   } else {
-//     $("#chat-list").append($("<li>").text(msg).addClass("bg-light"));
-//     even = !even;
-//   }
-// });
-
 socket.on("message", (msg) => {
-  $("#chat-list").append($("<li>").text(msg));
+  console.log(`message: ${msg}`);
+  let li = $("<li>").text(msg);
+  if (even) {
+    $("#chat-list").append($("<li>").text(msg).addClass("bg-white"));
+    even = !even;
+  } else {
+    $("#chat-list").append($("<li>").text(msg).addClass("bg-light"));
+    even = !even;
+  }
 });
+
+// socket.on("message", (msg) => {
+//   $("#chat-list").append($("<li>").text(msg));
+// });
