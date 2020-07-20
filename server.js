@@ -2,26 +2,30 @@ var express = require("express");
 var app = express();
 var http = require("http").createServer(app);
 var io = require("socket.io")(http);
+var bodyParser = require("body-parser");
+
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }));
+
+// parse application/json
+app.use(bodyParser.json());
 
 app.use(express.static("public"));
 
 app.get("/", (req, res) => {
-  res.send("login");
+  res.send("index");
 });
 
 io.on("connection", (socket) => {
-  console.log("a user connected");
   socket.on("message", (msg) => {
-    console.log("message: " + msg);
+    msg.username = socket.username;
     io.emit("message", msg);
   });
   socket.on("username", (username) => {
-    console.log("username: " + username);
-    socket.broadcast.emit("username", username);
+    socket.username = username;
+    io.emit("username", username);
   });
-  socket.on("disconnect", () => {
-    console.log("user disconnected");
-  });
+  socket.on("disconnect", () => {});
 });
 
 http.listen(3000, () => {
