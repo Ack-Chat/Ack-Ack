@@ -1,5 +1,5 @@
 {
-"name": "ack-ack",
+  "name": "ack-ack",
   "version": "1.0.0",
   "description": "Chat web app using Node.js and Socket.io",
   "main": "server.js",
