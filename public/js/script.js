@@ -30,6 +30,9 @@ socket.on("message", (msg) => {
 $("#login").submit((e) => {
   e.preventDefault();
   socket.emit("username", $("#username").val());
+  $("#chat-list").append(
+    $("<li>").text(`You joined as: ${$("#username").val()}`)
+  );
   return false;
 });
 
