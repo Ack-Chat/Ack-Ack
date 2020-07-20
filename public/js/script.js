@@ -1,6 +1,7 @@
 "use strict";
 
 var socket = io();
+let even = true;
 
 $("#chat-bar").submit((e) => {
   e.preventDefault();
@@ -9,8 +10,19 @@ $("#chat-bar").submit((e) => {
   return false;
 });
 
+// socket.on("message", (msg) => {
+//   console.log(`message: ${msg}`);
+//   let li = $("<li>").text(val);
+//   if (even) {
+//     $("#chat-list").append($("<li>").text(msg).addClass("bg-white"));
+//     even = !even;
+//   } else {
+//     $("#chat-list").append($("<li>").text(msg).addClass("bg-light"));
+//     even = !even;
+//   }
+// });
+
 socket.on("message", (msg) => {
-  console.log(`message: ${msg}`);
   $("#chat-list").append($("<li>").text(msg));
 });
 

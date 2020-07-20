@@ -16,29 +16,20 @@
   </head>
   <body>
     <header>
-      <h2 class="text-center pt-2">Ack Chat!</h2>
+      <h2 class="text-center pt-2">Welcome to Ack Chat!</h2>
     </header>
-    <!-- Chat messages container -->
-    <div class="container-fluid bg-secondary p-3">
-      <div class="container-fluid bg-white">
-        <ul id="chat-list"></ul>
-      </div>
-    </div>
     <!-- Chat bar container -->
-    <div class="container-fluid">
-      <form
-        id="chat-bar"
-        class="form-inline my-2 my-lg-0 chat-bar bg-secondary row"
-      >
+    <div class="container mt-4">
+      <form id="login" class="form-inline m-2 my-lg-0 p-2 bg-secondary row">
         <input
-          id="message"
+          id="username"
           class="form-control ml-3 mr-sm-2 w-75 col"
           type="text"
-          placeholder="New chat message"
-          aria-label="Chat"
+          placeholder="Please enter a username"
+          aria-label="Username"
         />
         <button class="btn btn-success mr-2 my-2 my-sm-0 col-2" type="submit">
-          Send
+          Submit
         </button>
       </form>
     </div>
