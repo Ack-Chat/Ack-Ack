@@ -35,14 +35,31 @@ MongoClient.connect(url, { useUnifiedTopology: true })
     const users = db.collection("users");
 
     io.on("connection", (socket) => {
-      // send user list back to new user
-      users
-        .find()
-        .toArray()
-        .then((results) => {
-          io.to(socket.id).emit("user-list", results);
-        })
-        .catch((error) => console.error(error));
+      // get user's data from local storage
+      socket.to(socket.id).emit("get-user-data");
+      socket.on("send-user-data", (data) => {
+        // update user's data in db
+        users
+          .findOneAndUpdate(
+            { name: data.name },
+            {
+              $set: {
+                id: data.id,
+              },
+            }
+          )
+          .then((result) => {
+            // send user list back to new user
+            users
+              .find()
+              .toArray()
+              .then((results) => {
+                io.to(socket.id).emit("user-list", results);
+              })
+              .catch((error) => console.error(error));
+          })
+          .catch((error) => console.error(error));
+      });
 
       // message received
       socket.on("message", (msg) => {
@@ -61,15 +78,22 @@ MongoClient.connect(url, { useUnifiedTopology: true })
           })
           .then((result) => {
             console.log(`${username} added to db`);
-          })
-          .catch((error) => console.error(error));
-        io.emit("new-user", username);
-        // send user list back to all users
-        users
-          .find()
-          .toArray()
-          .then((results) => {
-            io.emit("user-list", results);
+            io.to(socket.id).emit("set-user-data", {
+              id: socket.id,
+              name: username,
+            });
+            // update users in db based on connected users
+            const clients = Object.keys(io.sockets.sockets);
+            console.log(clients);
+            io.emit("new-user", username);
+            // send user list back to all users
+            users
+              .find()
+              .toArray()
+              .then((results) => {
+                io.emit("user-list", results);
+              })
+              .catch((error) => console.error(error));
           })
           .catch((error) => console.error(error));
       });

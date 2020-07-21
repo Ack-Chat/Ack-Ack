@@ -5,8 +5,34 @@ var socket = io();
 let even = true;
 let username = "";
 
+if (localStorage.getItem("ackChatUserId") != undefined) {
+  username = localStorage.getItem("ackChatUsername");
+  socket.emit("send-user-data", {
+    id: localStorage.getItem("ackChatUserId"),
+    name: localStorage.getItem("ackChatUsername"),
+  });
+  $("#chat-section").toggleClass("hide");
+  $("#chat-bar-container").toggleClass("hide");
+  $("#username-form").toggleClass("hide");
+  $("#message").focus();
+}
+
 $(() => {
   $("#username").focus();
+});
+
+// store user data in local storage
+socket.on("set-user-data", (data) => {
+  localStorage.setItem("ackChatUserId", data.id);
+  localStorage.setItem("ackChatUsername", data.name);
+});
+
+// send user data from local storage
+socket.on("get-user-data", () => {
+  socket.emit("send-user-data", {
+    id: localStorage.getItem("ackChatUserId"),
+    name: localStorage.getItem("ackChatUsername"),
+  });
 });
 
 $("#chat-bar").submit((e) => {
@@ -14,7 +40,6 @@ $("#chat-bar").submit((e) => {
   socket.emit("message", {
     message: $("#message").val(),
   });
-  // addChat(`${socket.nickname}: ${$("#message").val()}`);
   $("#message").val("");
   $("#message").focus();
   return false;
