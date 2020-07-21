@@ -67,6 +67,11 @@ MongoClient.connect(url, { useUnifiedTopology: true })
         io.emit("message", msg);
       });
 
+      // messasage is typing
+      socket.on("typing", function (data) {
+        socket.broadcast.emit("is typing", data);
+      });
+
       // we have a new user
       socket.on("new-user", (username) => {
         socket.username = username;
