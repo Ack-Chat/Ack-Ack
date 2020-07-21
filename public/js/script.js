@@ -51,9 +51,9 @@ socket.on("new-user", (name) => {
 
 // update user list
 socket.on("user-list", (users) => {
-  $("#users").empty();
+  $("#users-list").empty();
   users.forEach((user) => {
-    $("#users").append($("<li>").text(user.name).addClass("p-2"));
+    $("#users-list").append($("<li>").text(user.name).addClass("p-2"));
   });
 });
 
