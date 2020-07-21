@@ -5,17 +5,17 @@ var socket = io();
 let even = true;
 let username = "";
 
-if (localStorage.getItem("ackChatUserId") != undefined) {
-  username = localStorage.getItem("ackChatUsername");
-  socket.emit("send-user-data", {
-    id: localStorage.getItem("ackChatUserId"),
-    name: localStorage.getItem("ackChatUsername"),
-  });
-  $("#chat-section").toggleClass("hide");
-  $("#chat-bar-container").toggleClass("hide");
-  $("#username-form").toggleClass("hide");
-  $("#message").focus();
-}
+// if (localStorage.getItem("ackChatUserId") != undefined) {
+//   username = localStorage.getItem("ackChatUsername");
+//   socket.emit("send-user-data", {
+//     id: localStorage.getItem("ackChatUserId"),
+//     name: localStorage.getItem("ackChatUsername"),
+//   });
+//   $("#chat-section").toggleClass("hide");
+//   $("#chat-bar-container").toggleClass("hide");
+//   $("#username-form").toggleClass("hide");
+//   $("#message").focus();
+// }
 
 $(() => {
   $("#username").focus();
@@ -29,10 +29,15 @@ socket.on("set-user-data", (data) => {
 
 // send user data from local storage
 socket.on("get-user-data", () => {
-  socket.emit("send-user-data", {
-    id: localStorage.getItem("ackChatUserId"),
-    name: localStorage.getItem("ackChatUsername"),
-  });
+  if (
+    localStorage.getItem("ackChatUserId") != undefined &&
+    localStorage.getItem("ackChatUsername") != undefined
+  ) {
+    socket.emit("send-user-data", {
+      id: localStorage.getItem("ackChatUserId"),
+      name: localStorage.getItem("ackChatUsername"),
+    });
+  }
 });
 
 $("#chat-bar").submit((e) => {
@@ -51,7 +56,6 @@ $("#message").keypress(function () {
 
 //listen for typing event
 socket.on("is typing", function (data) {
-  console.log(data);
   document.querySelector("#typing-output").innerHTML = `${data} is typing`;
 });
 
@@ -71,7 +75,9 @@ $("#login").submit((e) => {
   $("#chat-section").toggleClass("hide");
   $("#chat-bar-container").toggleClass("hide");
   $("#username-form").toggleClass("hide");
-  socket.emit("new-user", username);
+  if (localStorage.getItem("ackChatUsername") != undefined) {
+    socket.emit("new-user", username);
+  }
   $("#message").focus();
   return false;
 });
@@ -88,10 +94,13 @@ socket.on("new-user", (name, time) => {
 
 // update user list
 socket.on("user-list", (users) => {
+  console.log(users);
   $("#users-list").empty();
+  console.log($("#users-list"));
   users.forEach((user) => {
     $("#users-list").append($("<li>").text(user.name).addClass("p-2"));
   });
+  console.log($("#users-list"));
 });
 
 // send message when user leaves
