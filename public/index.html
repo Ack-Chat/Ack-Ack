@@ -26,8 +26,9 @@
           name="username"
           class="form-control ml-3 mr-sm-2 w-75 col"
           type="text"
-          placeholder="Please enter a username"
+          placeholder="Username"
           aria-label="Username"
+          required
         />
         <input
           class="btn btn-success mr-2 my-2 my-sm-0 col-2"
@@ -43,8 +44,8 @@
         <div id="chat-messages" class="col container-fluid bg-secondary p-3">
           <div>
             <ul id="chat-list"></ul>
+            <p id="typing-output"></p>
           </div>
-          <p id="typing-output"></p>
         </div>
         <!--users container  -->
         <div id="users" class="col-3 container-fluid p-2 bg-primary">

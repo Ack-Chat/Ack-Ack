@@ -1,5 +1,5 @@
 "use strict";
-const chatMessages = document.getElementById("chat-messages");
+const chatMessages = document.getElementById("chat-list");
 
 var socket = io();
 let even = true;
