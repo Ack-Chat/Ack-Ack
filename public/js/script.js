@@ -5,17 +5,12 @@ var socket = io();
 let even = true;
 let username = "";
 
-// if (localStorage.getItem("ackChatUserId") != undefined) {
-//   username = localStorage.getItem("ackChatUsername");
-//   socket.emit("send-user-data", {
-//     id: localStorage.getItem("ackChatUserId"),
-//     name: localStorage.getItem("ackChatUsername"),
-//   });
-//   $("#chat-section").toggleClass("hide");
-//   $("#chat-bar-container").toggleClass("hide");
-//   $("#username-form").toggleClass("hide");
-//   $("#message").focus();
-// }
+if (localStorage.getItem("ackChatUserId") !== null) {
+  $("#chat-section").toggleClass("hide");
+  $("#chat-bar-container").toggleClass("hide");
+  $("#username-form").toggleClass("hide");
+  $("#message").focus();
+}
 
 $(() => {
   $("#username").focus();
@@ -30,8 +25,8 @@ socket.on("set-user-data", (data) => {
 // send user data from local storage
 socket.on("get-user-data", () => {
   if (
-    localStorage.getItem("ackChatUserId") != undefined &&
-    localStorage.getItem("ackChatUsername") != undefined
+    localStorage.getItem("ackChatUserId") !== null &&
+    localStorage.getItem("ackChatUsername") !== null
   ) {
     socket.emit("send-user-data", {
       id: localStorage.getItem("ackChatUserId"),
@@ -75,7 +70,7 @@ $("#login").submit((e) => {
   $("#chat-section").toggleClass("hide");
   $("#chat-bar-container").toggleClass("hide");
   $("#username-form").toggleClass("hide");
-  if (localStorage.getItem("ackChatUsername") != undefined) {
+  if (localStorage.getItem("ackChatUsername") === null) {
     socket.emit("new-user", username);
   }
   $("#message").focus();

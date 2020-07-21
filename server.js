@@ -39,40 +39,24 @@ MongoClient.connect(url, { useUnifiedTopology: true })
     io.on("connection", (socket) => {
       console.log(`${socket.id} connected`);
       const connectedUsers = Object.keys(io.sockets.sockets);
-      console.log(connectedUsers);
       // get user's data from local storage
       io.to(socket.id).emit("get-user-data");
       socket.on("send-user-data", (data) => {
-        const validUsers = [];
-        // get all connected users from db
-        users
-          .find()
-          .toArray()
-          .then((users) => {
-            users.forEach((user) => {
-              console.log(user);
-              if (connectedUsers.includes(user.id)) {
-                console.log("adding to validUsers");
-                validUsers.push(user);
-              }
-            });
-            console.log(validUsers);
-          })
-          .catch((error) => console.error(error));
-
         // delete all users with user name
         users
-          .deleteMany()
+          .deleteMany({ name: data.name })
           .then((result) => {
-            socket.id = data.id;
             // insert one user with user data
-            connectedUsers.forEach((user) => {});
             users
               .insertOne({
-                id: data.id,
+                id: socket.id,
                 name: data.name,
               })
               .then((result) => {
+                io.to(socket.id).emit("set-user-data", {
+                  id: socket.id,
+                  name: data.name,
+                });
                 // send out new user-list
                 users
                   .find()
@@ -81,27 +65,6 @@ MongoClient.connect(url, { useUnifiedTopology: true })
                     io.emit("user-list", results);
                   })
                   .catch((error) => console.error(error));
-              })
-              .catch((error) => console.error(error));
-          })
-          .catch((error) => console.error(error));
-        // update user's data in db
-        users
-          .findOneAndUpdate(
-            { name: data.name },
-            {
-              $set: {
-                id: data.id,
-              },
-            }
-          )
-          .then((result) => {
-            // send user list back to new user
-            users
-              .find()
-              .toArray()
-              .then((results) => {
-                io.to(socket.id).emit("user-list", results);
               })
               .catch((error) => console.error(error));
           })
