@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="css/theme.css" />
   </head>
   <body>
-    <header>
+    <header class="header-1">
       <h2 class="text-center pt-2">Ack Chat!</h2>
     </header>
     <!-- Username form -->
@@ -37,11 +37,11 @@
       </form>
     </div>
     <!-- Chat section -->
-    <div id="chat-section" class="container-fluid hide">
-      <div class="row">
+    <div class="container-1">
+      <div id="chat-section" class="chat-1 row container-fluid hide">
         <!-- Messages container -->
         <div id="chat-messages" class="col container-fluid bg-secondary p-3">
-          <div class="container-fluid bg-white p-0 m-0 rounded">
+          <div>
             <ul id="chat-list"></ul>
           </div>
         </div>
@@ -51,25 +51,27 @@
           <ul class="bg-white rounded" id="users-list"></ul>
         </div>
       </div>
+
+      <!-- Chat bar container -->
+      <div id="chat-bar-container" class="container-fluid p-2 hide">
+        <form
+          id="chat-bar"
+          class="form-inline my-2 my-lg-0 bg-secondary chat-bar row"
+        >
+          <input
+            id="message"
+            class="form-control mx-3 mr-sm-2 w-75 col"
+            type="text"
+            placeholder="New chat message"
+            aria-label="Chat"
+          />
+          <button class="btn btn-success mr-3 my-2 my-sm-0 col-2" type="submit">
+            Send
+          </button>
+        </form>
+      </div>
     </div>
-    <!-- Chat bar container -->
-    <div id="chat-bar-container" class="container-fluid p-2 hide">
-      <form
-        id="chat-bar"
-        class="form-inline my-2 my-lg-0 bg-secondary chat-bar row"
-      >
-        <input
-          id="message"
-          class="form-control mx-3 mr-sm-2 w-75 col"
-          type="text"
-          placeholder="New chat message"
-          aria-label="Chat"
-        />
-        <button class="btn btn-success mr-3 my-2 my-sm-0 col-2" type="submit">
-          Send
-        </button>
-      </form>
-    </div>
+
     <script
       src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
       integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"

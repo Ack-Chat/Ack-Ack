@@ -16,3 +16,25 @@ body {
 .hide {
   display: none;
 }
+
+.container-1 {
+  max-height: calc(100vh - 120px);
+  overflow: hidden;
+}
+
+#chat-messages {
+  max-height: calc(100vh - 120px);
+
+  overflow-y: scroll;
+}
+#users {
+  max-height: calc(100vh - 120px);
+
+  overflow-y: scroll;
+  padding-right: 0 !important;
+}
+
+#chat-section {
+  margin: 0;
+  padding: 0;
+}

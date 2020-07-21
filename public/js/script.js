@@ -1,4 +1,5 @@
 "use strict";
+const chatMessages = document.getElementById("chat-messages");
 
 var socket = io();
 let even = true;
@@ -68,19 +69,23 @@ function addChat(msg, orientation) {
       $("#chat-list").append(
         $("<li>").text(msg).addClass("bg-white p-2 text-right")
       );
+      chatMessages.scrollTop = chatMessages.scrollHeight;
       even = !even;
     } else {
       $("#chat-list").append(
         $("<li>").text(msg).addClass("bg-light p-2 text-right")
       );
+      chatMessages.scrollTop = chatMessages.scrollHeight;
       even = !even;
     }
   } else {
     if (even) {
       $("#chat-list").append($("<li>").text(msg).addClass("bg-white p-2"));
+      chatMessages.scrollTop = chatMessages.scrollHeight;
       even = !even;
     } else {
       $("#chat-list").append($("<li>").text(msg).addClass("bg-light p-2"));
+      chatMessages.scrollTop = chatMessages.scrollHeight;
       even = !even;
     }
   }
