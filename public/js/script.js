@@ -32,9 +32,9 @@ socket.on("is typing", function (data) {
 
 socket.on("message", (msg) => {
   if (msg.username === username) {
-    addChat(`${msg.username} ${msg.time}: ${msg.message}`, "right");
+    addChat(`${msg.username}: ${msg.message} - ${msg.time}`, "right");
   } else {
-    addChat(`${msg.username} ${msg.time}: ${msg.message}`, "left");
+    addChat(`${msg.time} - ${msg.username}: ${msg.message}`, "left");
   }
   document.querySelector("#typing-output").innerHTML = "";
 });
@@ -55,9 +55,9 @@ $("#login").submit((e) => {
 socket.on("new-user", (name, time) => {
   $("#users-list").append($("<li>").text(name));
   if (name === username) {
-    addChat(`${name} ${time}: joined the chat`, "right");
+    addChat(`${name} joined the chat - ${time}`, "right");
   } else {
-    addChat(`${name} ${time}: joined the chat`, "left");
+    addChat(`${time} - ${name} joined the chat`, "left");
   }
 });
 
@@ -71,7 +71,7 @@ socket.on("user-list", (users) => {
 
 // send message when user leaves
 socket.on("user-left", (name) => {
-  addChat(`${name.name} ${name.time}: has left the chat`, "left");
+  addChat(`${name.time} - ${name.name} has left the chat`, "left");
 });
 
 function addChat(msg, orientation) {
