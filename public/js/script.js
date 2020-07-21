@@ -5,8 +5,34 @@ var socket = io();
 let even = true;
 let username = "";
 
+if (localStorage.getItem("ackChatUserId") !== null) {
+  $("#chat-section").toggleClass("hide");
+  $("#chat-bar-container").toggleClass("hide");
+  $("#username-form").toggleClass("hide");
+  $("#message").focus();
+}
+
 $(() => {
   $("#username").focus();
+});
+
+// store user data in local storage
+socket.on("set-user-data", (data) => {
+  localStorage.setItem("ackChatUserId", data.id);
+  localStorage.setItem("ackChatUsername", data.name);
+});
+
+// send user data from local storage
+socket.on("get-user-data", () => {
+  if (
+    localStorage.getItem("ackChatUserId") !== null &&
+    localStorage.getItem("ackChatUsername") !== null
+  ) {
+    socket.emit("send-user-data", {
+      id: localStorage.getItem("ackChatUserId"),
+      name: localStorage.getItem("ackChatUsername"),
+    });
+  }
 });
 
 $("#chat-bar").submit((e) => {
@@ -14,7 +40,6 @@ $("#chat-bar").submit((e) => {
   socket.emit("message", {
     message: $("#message").val(),
   });
-  // addChat(`${socket.nickname}: ${$("#message").val()}`);
   $("#message").val("");
   $("#message").focus();
   return false;
@@ -26,7 +51,6 @@ $("#message").keypress(function () {
 
 //listen for typing event
 socket.on("is typing", function (data) {
-  console.log(data);
   document.querySelector("#typing-output").innerHTML = `${data} is typing`;
 });
 
@@ -46,7 +70,9 @@ $("#login").submit((e) => {
   $("#chat-section").toggleClass("hide");
   $("#chat-bar-container").toggleClass("hide");
   $("#username-form").toggleClass("hide");
-  socket.emit("new-user", username);
+  if (localStorage.getItem("ackChatUsername") === null) {
+    socket.emit("new-user", username);
+  }
   $("#message").focus();
   return false;
 });
@@ -63,10 +89,13 @@ socket.on("new-user", (name, time) => {
 
 // update user list
 socket.on("user-list", (users) => {
+  console.log(users);
   $("#users-list").empty();
+  console.log($("#users-list"));
   users.forEach((user) => {
     $("#users-list").append($("<li>").text(user.name).addClass("p-2"));
   });
+  console.log($("#users-list"));
 });
 
 // send message when user leaves

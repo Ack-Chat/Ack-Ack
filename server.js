@@ -37,20 +37,52 @@ MongoClient.connect(url, { useUnifiedTopology: true })
     const users = db.collection("users");
 
     io.on("connection", (socket) => {
-      // send user list back to new user
-      users
-        .find()
-        .toArray()
-        .then((results) => {
-          io.to(socket.id).emit("user-list", results);
-        })
-        .catch((error) => console.error(error));
+      console.log(`${socket.id} connected`);
+      const connectedUsers = Object.keys(io.sockets.sockets);
+      // get user's data from local storage
+      io.to(socket.id).emit("get-user-data");
+      socket.on("send-user-data", (data) => {
+        // delete all users with user name
+        users
+          .deleteMany({ name: data.name })
+          .then((result) => {
+            // insert one user with user data
+            users
+              .insertOne({
+                id: socket.id,
+                name: data.name,
+              })
+              .then((result) => {
+                io.to(socket.id).emit("set-user-data", {
+                  id: socket.id,
+                  name: data.name,
+                });
+                // send out new user-list
+                users
+                  .find()
+                  .toArray()
+                  .then((results) => {
+                    io.emit("user-list", results);
+                  })
+                  .catch((error) => console.error(error));
+              })
+              .catch((error) => console.error(error));
+          })
+          .catch((error) => console.error(error));
+      });
 
       // message received
       socket.on("message", (msg) => {
-        msg.username = socket.username;
-        msg.time = moment().format("h:mm a");
-        io.emit("message", msg);
+        users
+          .findOne({ id: socket.id })
+          .then((result) => {
+            if (result != undefined) {
+              msg.username = result.name;
+              msg.time = moment().format("h:mm a");
+              io.emit("message", msg);
+            }
+          })
+          .catch((error) => console.error(error));
       });
 
       // messasage is typing
@@ -62,33 +94,43 @@ MongoClient.connect(url, { useUnifiedTopology: true })
       socket.on("new-user", (username, time) => {
         socket.username = username;
         time = moment().format("h:mm a");
-        // add user to db
         users
-          .insertOne({
-            id: socket.id,
-            name: username,
-          })
+          .deleteMany({ name: username })
           .then((result) => {
-            console.log(`${username} added to db`);
-          })
-          .catch((error) => console.error(error));
-        io.emit("new-user", username, time);
-        // send user list back to all users
-        users
-          .find()
-          .toArray()
-          .then((results) => {
-            io.emit("user-list", results);
+            // add user to db
+            users
+              .insertOne({
+                id: socket.id,
+                name: username,
+              })
+              .then((result) => {
+                console.log(`${username} added to db`);
+                io.to(socket.id).emit("set-user-data", {
+                  id: socket.id,
+                  name: username,
+                });
+                io.emit("new-user", username, time);
+                // send user list back to all users
+                users
+                  .find()
+                  .toArray()
+                  .then((results) => {
+                    io.emit("user-list", results);
+                  })
+                  .catch((error) => console.error(error));
+              })
+              .catch((error) => console.error(error));
           })
           .catch((error) => console.error(error));
       });
 
       // a user has disconnected
       socket.on("disconnect", () => {
+        console.log(`${socket.id} disconnected`);
         users
           .findOne({ id: socket.id })
           .then((result) => {
-            if (result.name != undefined) {
+            if (result != undefined) {
               result.time = moment().format("h:mm a");
               io.emit("user-left", result);
             }
