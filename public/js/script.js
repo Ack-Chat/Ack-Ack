@@ -20,12 +20,23 @@ $("#chat-bar").submit((e) => {
   return false;
 });
 
+$("#message").keypress(function () {
+  socket.emit("typing", $("#username").val());
+});
+
+//listen for typing event
+socket.on("is typing", function (data) {
+  console.log(data);
+  document.querySelector("#typing-output").innerHTML = `${data} is typing`;
+});
+
 socket.on("message", (msg) => {
   if (msg.username === username) {
     addChat(`${msg.username}: ${msg.message}`, "right");
   } else {
     addChat(`${msg.username}: ${msg.message}`, "left");
   }
+  document.querySelector("#typing-output").innerHTML = "";
 });
 
 // event listener for login form
