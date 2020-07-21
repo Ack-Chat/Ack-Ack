@@ -27,26 +27,39 @@ socket.on("message", (msg) => {
   }
 });
 
-// event listener for username
+// event listener for login form
 $("#login").submit((e) => {
   e.preventDefault();
   username = $("#username").val();
   $("#chat-section").toggleClass("hide");
   $("#chat-bar-container").toggleClass("hide");
   $("#username-form").toggleClass("hide");
-  socket.emit("username", username);
+  socket.emit("new-user", username);
   $("#message").focus();
   return false;
 });
 
 // add username message to chat list
-socket.on("username", (name) => {
+socket.on("new-user", (name) => {
   $("#users-list").append($("<li>").text(name));
   if (name === username) {
     addChat(`${name} joined the chat`, "right");
   } else {
     addChat(`${name} joined the chat`, "left");
   }
+});
+
+// update user list
+socket.on("user-list", (users) => {
+  $("#users").empty();
+  users.forEach((user) => {
+    $("#users").append($("<li>").text(user.name).addClass("p-2"));
+  });
+});
+
+// send message when user leaves
+socket.on("user-left", (name) => {
+  addChat(`${name} has left the chat`, "left");
 });
 
 function addChat(msg, orientation) {

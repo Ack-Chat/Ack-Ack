@@ -18,8 +18,11 @@
   },
   "homepage": "https://github.com/Ack-Chat/ack#README",
   "dependencies": {
+    "aws-sdk": "^2.716.0",
     "body": "^5.1.0",
+    "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "mongodb": "^3.5.9",
     "parser": "^0.1.4",
     "socket.io": "^2.3.0"
   }
