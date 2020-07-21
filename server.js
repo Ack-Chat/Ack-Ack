@@ -7,6 +7,8 @@ var io = require("socket.io")(http);
 var bodyParser = require("body-parser");
 const MongoClient = require("mongodb").MongoClient;
 const assert = require("assert");
+const moment = require("moment");
+const { time } = require("console");
 
 require("dotenv").config();
 
@@ -64,6 +66,7 @@ MongoClient.connect(url, { useUnifiedTopology: true })
       // message received
       socket.on("message", (msg) => {
         msg.username = socket.username;
+        msg.time = moment().format("h:mm a");
         io.emit("message", msg);
       });
 
@@ -73,8 +76,9 @@ MongoClient.connect(url, { useUnifiedTopology: true })
       });
 
       // we have a new user
-      socket.on("new-user", (username) => {
+      socket.on("new-user", (username, time) => {
         socket.username = username;
+        time = moment().format("h:mm a");
         // add user to db
         users
           .insertOne({
@@ -90,7 +94,7 @@ MongoClient.connect(url, { useUnifiedTopology: true })
             // update users in db based on connected users
             const clients = Object.keys(io.sockets.sockets);
             console.log(clients);
-            io.emit("new-user", username);
+            io.emit("new-user", username, time);
             // send user list back to all users
             users
               .find()
@@ -109,7 +113,8 @@ MongoClient.connect(url, { useUnifiedTopology: true })
           .findOne({ id: socket.id })
           .then((result) => {
             if (result.name != undefined) {
-              io.emit("user-left", result.name);
+              result.time = moment().format("h:mm a");
+              io.emit("user-left", result);
             }
           })
           .catch((error) => console.error(error));
