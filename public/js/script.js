@@ -22,9 +22,9 @@ $("#chat-bar").submit((e) => {
 
 socket.on("message", (msg) => {
   if (msg.username === username) {
-    addChat(`${msg.username}: ${msg.message}`, "right");
+    addChat(`${msg.username} ${msg.time}: ${msg.message}`, "right");
   } else {
-    addChat(`${msg.username}: ${msg.message}`, "left");
+    addChat(`${msg.username} ${msg.time}: ${msg.message}`, "left");
   }
 });
 
@@ -41,12 +41,12 @@ $("#login").submit((e) => {
 });
 
 // add username message to chat list
-socket.on("new-user", (name) => {
+socket.on("new-user", (name, time) => {
   $("#users-list").append($("<li>").text(name));
   if (name === username) {
-    addChat(`${name} joined the chat`, "right");
+    addChat(`${name} ${time}: joined the chat`, "right");
   } else {
-    addChat(`${name} joined the chat`, "left");
+    addChat(`${name} ${time}: joined the chat`, "left");
   }
 });
 
@@ -60,7 +60,7 @@ socket.on("user-list", (users) => {
 
 // send message when user leaves
 socket.on("user-left", (name) => {
-  addChat(`${name} has left the chat`, "left");
+  addChat(`${name.name} ${name.time}: has left the chat`, "left");
 });
 
 function addChat(msg, orientation) {
