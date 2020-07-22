@@ -129,44 +129,47 @@ MongoClient.connect(db_url, { useUnifiedTopology: true })
 
       // we have a new user
       socket.on("new-user", (username, time) => {
-        users.findOne({ name: username }).then((result) => {
-          if (result != undefined) {
-            io.to(socket.id).emit("user-exist", { existed: true });
-            //console.log("existing");
-          } else {
-            io.to(socket.id).emit("user-exist", { existed: false });
-            console.log("not existing");
-            socket.username = username;
-            time = moment().format("h:mm a");
-            users
-              .deleteMany({ name: username })
-              .then((result) => {
-                // add user to db
-                users
-                  .insertOne({
-                    id: socket.id,
-                    name: username,
-                  })
-                  .then((result) => {
-                    io.to(socket.id).emit("set-user-data", {
+        users
+          .findOne({ name: username })
+          .then((result) => {
+            if (result != undefined) {
+              io.to(socket.id).emit("user-exist", { existed: true });
+              //console.log("existing");
+            } else {
+              io.to(socket.id).emit("user-exist", { existed: false });
+              console.log("not existing");
+              socket.username = username;
+              time = moment().format("h:mm a");
+              users
+                .deleteMany({ name: username })
+                .then((result) => {
+                  // add user to db
+                  users
+                    .insertOne({
                       id: socket.id,
                       name: username,
-                    });
-                    io.emit("new-user", username, time);
-                    // send user list back to all users
-                    users
-                      .find()
-                      .toArray()
-                      .then((results) => {
-                        io.emit("user-list", results);
-                      })
-                      .catch((error) => console.error(error));
-                  })
-                  .catch((error) => console.error(error));
-              })
-              .catch((error) => console.error(error));
-          }
-        });
+                    })
+                    .then((result) => {
+                      io.to(socket.id).emit("set-user-data", {
+                        id: socket.id,
+                        name: username,
+                      });
+                      io.emit("new-user", username, time);
+                      // send user list back to all users
+                      users
+                        .find()
+                        .toArray()
+                        .then((results) => {
+                          io.emit("user-list", results);
+                        })
+                        .catch((error) => console.error(error));
+                    })
+                    .catch((error) => console.error(error));
+                })
+                .catch((error) => console.error(error));
+            }
+          })
+          .catch((error) => console.error(error));
       });
 
       // a user has disconnected
