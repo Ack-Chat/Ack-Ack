@@ -18,15 +18,26 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // parse application/json
 app.use(bodyParser.json());
 
+// use server available port or 3000
+const PORT = process.env.PORT !== undefined ? process.env.PORT : 3000;
+
 app.use(express.static("public"));
 
 app.get("/", (req, res) => {
   res.send("index");
 });
 
+<<<<<<< HEAD
 var user = encodeURIComponent("myUserAdmin");
 var password = encodeURIComponent("aabbcc");
 var authMechanism = "DEFAULT";
+=======
+// Connection URL
+const db_url =
+  process.env.MONGOLAB_URI !== undefined
+    ? process.env.MONGOLAB_URI
+    : "mongodb://localhost:27017";
+>>>>>>> f20274f21653211be89db6b78d5ffe28d3ab54f2
 
 // Connection URL
 //const url = "mongodb://localhost:27017";
@@ -38,29 +49,79 @@ const url = f(
   authMechanism
 );
 // Database Name
-const dbName = "ackchat";
+const dbName =
+  process.env.MONGOLAB_DBNAME !== undefined
+    ? process.env.MONGOLAB_DBNAME
+    : "ackchat";
 
-MongoClient.connect(url, { useUnifiedTopology: true })
+MongoClient.connect(db_url, { useUnifiedTopology: true })
   .then((client) => {
     console.log("Connected to Database");
     const db = client.db(dbName);
     const users = db.collection("users");
+    const messages = db.collection("messages");
 
     io.on("connection", (socket) => {
-      // send user list back to new user
-      users
+      // get user's data from local storage
+      io.to(socket.id).emit("get-user-data");
+      socket.on("send-user-data", (data) => {
+        // delete all users with user name
+        users
+          .deleteMany({ name: data.name })
+          .then((result) => {
+            // insert one user with user data
+            users
+              .insertOne({
+                id: socket.id,
+                name: data.name,
+              })
+              .then((result) => {
+                io.to(socket.id).emit("set-user-data", {
+                  id: socket.id,
+                  name: data.name,
+                });
+                // send out new user-list
+                users
+                  .find()
+                  .toArray()
+                  .then((results) => {
+                    io.emit("user-list", results);
+                  })
+                  .catch((error) => console.error(error));
+              })
+              .catch((error) => console.error(error));
+          })
+          .catch((error) => console.error(error));
+      });
+
+      messages
         .find()
         .toArray()
         .then((results) => {
-          io.to(socket.id).emit("user-list", results);
+          io.to(socket.id).emit("messages", results);
         })
         .catch((error) => console.error(error));
 
       // message received
       socket.on("message", (msg) => {
-        msg.username = socket.username;
-        msg.time = moment().format("h:mm a");
-        io.emit("message", msg);
+        users
+          .findOne({ id: socket.id })
+          .then((result) => {
+            if (result != undefined) {
+              msg.username = result.name;
+              msg.time = moment().format("h:mm a");
+              io.emit("message", msg);
+              messages
+                .insertOne({
+                  message: msg.message,
+                  username: msg.username,
+                  time: msg.time,
+                })
+                .then((result) => {})
+                .catch((error) => console.error(error));
+            }
+          })
+          .catch((error) => console.error(error));
       });
 
       // messasage is typing
@@ -72,23 +133,31 @@ MongoClient.connect(url, { useUnifiedTopology: true })
       socket.on("new-user", (username, time) => {
         socket.username = username;
         time = moment().format("h:mm a");
-        // add user to db
         users
-          .insertOne({
-            id: socket.id,
-            name: username,
-          })
+          .deleteMany({ name: username })
           .then((result) => {
-            console.log(`${username} added to db`);
-          })
-          .catch((error) => console.error(error));
-        io.emit("new-user", username, time);
-        // send user list back to all users
-        users
-          .find()
-          .toArray()
-          .then((results) => {
-            io.emit("user-list", results);
+            // add user to db
+            users
+              .insertOne({
+                id: socket.id,
+                name: username,
+              })
+              .then((result) => {
+                io.to(socket.id).emit("set-user-data", {
+                  id: socket.id,
+                  name: username,
+                });
+                io.emit("new-user", username, time);
+                // send user list back to all users
+                users
+                  .find()
+                  .toArray()
+                  .then((results) => {
+                    io.emit("user-list", results);
+                  })
+                  .catch((error) => console.error(error));
+              })
+              .catch((error) => console.error(error));
           })
           .catch((error) => console.error(error));
       });
@@ -98,7 +167,7 @@ MongoClient.connect(url, { useUnifiedTopology: true })
         users
           .findOne({ id: socket.id })
           .then((result) => {
-            if (result.name != undefined) {
+            if (result != undefined) {
               result.time = moment().format("h:mm a");
               io.emit("user-left", result);
             }
@@ -121,6 +190,6 @@ MongoClient.connect(url, { useUnifiedTopology: true })
   })
   .catch(console.error);
 
-http.listen(3000, () => {
-  console.log("listening on *:3000");
+http.listen(PORT, () => {
+  console.log(`listening on *:${PORT}`);
 });

@@ -1,12 +1,55 @@
 "use strict";
-const chatMessages = document.getElementById("chat-messages");
+const chatMessages = document.getElementById("chat-list");
 
 var socket = io();
 let even = true;
-let username = "";
+
+if (localStorage.getItem("ackChatUserId") !== null) {
+  $("#chat-section").toggleClass("hide");
+  $("#chat-bar-container").toggleClass("hide");
+  $("#username-form").toggleClass("hide");
+  $("#message").focus();
+}
 
 $(() => {
   $("#username").focus();
+});
+
+// populate messages
+socket.on("messages", (messages) => {
+  $("#chat-list").empty();
+  messages.forEach((message) => {
+    if (message.username === localStorage.getItem("ackChatUsername")) {
+      addChat(
+        `${message.username}: ${message.message} - ${message.time}`,
+        "right"
+      );
+    } else {
+      addChat(
+        `${message.time} - ${message.username}: ${message.message}`,
+        "left"
+      );
+    }
+  });
+});
+
+// store user data in local storage
+socket.on("set-user-data", (data) => {
+  localStorage.setItem("ackChatUserId", data.id);
+  localStorage.setItem("ackChatUsername", data.name);
+});
+
+// send user data from local storage
+socket.on("get-user-data", () => {
+  if (
+    localStorage.getItem("ackChatUserId") !== null &&
+    localStorage.getItem("ackChatUsername") !== null
+  ) {
+    socket.emit("send-user-data", {
+      id: localStorage.getItem("ackChatUserId"),
+      name: localStorage.getItem("ackChatUsername"),
+    });
+  }
 });
 
 $("#chat-bar").submit((e) => {
@@ -14,24 +57,22 @@ $("#chat-bar").submit((e) => {
   socket.emit("message", {
     message: $("#message").val(),
   });
-  // addChat(`${socket.nickname}: ${$("#message").val()}`);
   $("#message").val("");
   $("#message").focus();
   return false;
 });
 
 $("#message").keypress(function () {
-  socket.emit("typing", $("#username").val());
+  socket.emit("typing", localStorage.getItem("ackChatUsername"));
 });
 
 //listen for typing event
 socket.on("is typing", function (data) {
-  console.log(data);
-  document.querySelector("#typing-output").innerHTML = `${data} is typing`;
+  document.querySelector("#typing-output").textContent = `${data} is typing`;
 });
 
 socket.on("message", (msg) => {
-  if (msg.username === username) {
+  if (msg.username === localStorage.getItem("ackChatUsername")) {
     addChat(`${msg.username}: ${msg.message} - ${msg.time}`, "right");
   } else {
     addChat(`${msg.time} - ${msg.username}: ${msg.message}`, "left");
@@ -42,11 +83,13 @@ socket.on("message", (msg) => {
 // event listener for login form
 $("#login").submit((e) => {
   e.preventDefault();
-  username = $("#username").val();
+  localStorage.setItem("ackChatUsername", $("#username").val());
   $("#chat-section").toggleClass("hide");
   $("#chat-bar-container").toggleClass("hide");
   $("#username-form").toggleClass("hide");
-  socket.emit("new-user", username);
+  if (localStorage.getItem("ackChatUsername") !== null) {
+    socket.emit("new-user", localStorage.getItem("ackChatUsername"));
+  }
   $("#message").focus();
   return false;
 });
@@ -54,7 +97,7 @@ $("#login").submit((e) => {
 // add username message to chat list
 socket.on("new-user", (name, time) => {
   $("#users-list").append($("<li>").text(name));
-  if (name === username) {
+  if (name === localStorage.getItem("ackChatUsername")) {
     addChat(`${name} joined the chat - ${time}`, "right");
   } else {
     addChat(`${time} - ${name} joined the chat`, "left");
