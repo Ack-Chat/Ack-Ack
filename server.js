@@ -18,6 +18,9 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // parse application/json
 app.use(bodyParser.json());
 
+// use server available port or 3000
+const PORT = process.env.PORT !== undefined ? process.env.PORT : 3000;
+
 app.use(express.static("public"));
 
 app.get("/", (req, res) => {
@@ -25,12 +28,18 @@ app.get("/", (req, res) => {
 });
 
 // Connection URL
-const url = "mongodb://localhost:27017";
+const db_url =
+  process.env.MONGOLAB_URI !== undefined
+    ? process.env.MONGOLAB_URI
+    : "mongodb://localhost:27017";
 
 // Database Name
-const dbName = "ackchat";
+const dbName =
+  process.env.MONGOLAB_DBNAME !== undefined
+    ? process.env.MONGOLAB_DBNAME
+    : "ackchat";
 
-MongoClient.connect(url, { useUnifiedTopology: true })
+MongoClient.connect(db_url, { useUnifiedTopology: true })
   .then((client) => {
     console.log("Connected to Database");
     const db = client.db(dbName);
@@ -166,6 +175,6 @@ MongoClient.connect(url, { useUnifiedTopology: true })
   })
   .catch(console.error);
 
-http.listen(3000, () => {
-  console.log("listening on *:3000");
+http.listen(PORT, () => {
+  console.log(`listening on *:${PORT}`);
 });
