@@ -33,12 +33,6 @@ socket.on("messages", (messages) => {
   });
 });
 
-// store user data in local storage
-socket.on("set-user-data", (data) => {
-  localStorage.setItem("ackChatUserId", data.id);
-  localStorage.setItem("ackChatUsername", data.name);
-});
-
 // send user data from local storage
 socket.on("get-user-data", () => {
   if (
@@ -84,14 +78,32 @@ socket.on("message", (msg) => {
 $("#login").submit((e) => {
   e.preventDefault();
   localStorage.setItem("ackChatUsername", $("#username").val());
-  $("#chat-section").toggleClass("hide");
-  $("#chat-bar-container").toggleClass("hide");
-  $("#username-form").toggleClass("hide");
   if (localStorage.getItem("ackChatUsername") !== null) {
     socket.emit("new-user", localStorage.getItem("ackChatUsername"));
   }
-  $("#message").focus();
-  return false;
+});
+
+socket.on("user-exist", (data) => {
+  if (data.existed === true) {
+    //console.log("receving existing");
+    //localStorage.setItem("ackChatUserId", null);
+    window.alert("Please choose a different name");
+    return false;
+  } else if (data.existed === false) {
+    //e.preventDefault();
+    //console.log("recevie not exiting");
+    $("#chat-section").toggleClass("hide");
+    $("#chat-bar-container").toggleClass("hide");
+    $("#username-form").toggleClass("hide");
+
+    $("#message").focus();
+  }
+});
+
+// store user data in local storage
+socket.on("set-user-data", (data) => {
+  localStorage.setItem("ackChatUserId", data.id);
+  localStorage.setItem("ackChatUsername", data.name);
 });
 
 // add username message to chat list

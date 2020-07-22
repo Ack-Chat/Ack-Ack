@@ -27,27 +27,25 @@ app.get("/", (req, res) => {
   res.send("index");
 });
 
-<<<<<<< HEAD
-var user = encodeURIComponent("myUserAdmin");
-var password = encodeURIComponent("aabbcc");
-var authMechanism = "DEFAULT";
-=======
+// var user = encodeURIComponent("myUserAdmin");
+// var password = encodeURIComponent("aabbcc");
+// var authMechanism = "DEFAULT";
+
 // Connection URL
 const db_url =
   process.env.MONGOLAB_URI !== undefined
     ? process.env.MONGOLAB_URI
     : "mongodb://localhost:27017";
->>>>>>> f20274f21653211be89db6b78d5ffe28d3ab54f2
 
 // Connection URL
 //const url = "mongodb://localhost:27017";
-var f = require("util").format;
-const url = f(
-  "mongodb://%s:%s@localhost:27017/?authMechanism=%s",
-  user,
-  password,
-  authMechanism
-);
+// var f = require("util").format;
+// const url = f(
+//   "mongodb://%s:%s@localhost:27017/?authMechanism=%s",
+//   user,
+//   password,
+//   authMechanism
+// );
 // Database Name
 const dbName =
   process.env.MONGOLAB_DBNAME !== undefined
@@ -131,35 +129,44 @@ MongoClient.connect(db_url, { useUnifiedTopology: true })
 
       // we have a new user
       socket.on("new-user", (username, time) => {
-        socket.username = username;
-        time = moment().format("h:mm a");
-        users
-          .deleteMany({ name: username })
-          .then((result) => {
-            // add user to db
+        users.findOne({ name: username }).then((result) => {
+          if (result != undefined) {
+            io.to(socket.id).emit("user-exist", { existed: true });
+            //console.log("existing");
+          } else {
+            io.to(socket.id).emit("user-exist", { existed: false });
+            console.log("not existing");
+            socket.username = username;
+            time = moment().format("h:mm a");
             users
-              .insertOne({
-                id: socket.id,
-                name: username,
-              })
+              .deleteMany({ name: username })
               .then((result) => {
-                io.to(socket.id).emit("set-user-data", {
-                  id: socket.id,
-                  name: username,
-                });
-                io.emit("new-user", username, time);
-                // send user list back to all users
+                // add user to db
                 users
-                  .find()
-                  .toArray()
-                  .then((results) => {
-                    io.emit("user-list", results);
+                  .insertOne({
+                    id: socket.id,
+                    name: username,
+                  })
+                  .then((result) => {
+                    io.to(socket.id).emit("set-user-data", {
+                      id: socket.id,
+                      name: username,
+                    });
+                    io.emit("new-user", username, time);
+                    // send user list back to all users
+                    users
+                      .find()
+                      .toArray()
+                      .then((results) => {
+                        io.emit("user-list", results);
+                      })
+                      .catch((error) => console.error(error));
                   })
                   .catch((error) => console.error(error));
               })
               .catch((error) => console.error(error));
-          })
-          .catch((error) => console.error(error));
+          }
+        });
       });
 
       // a user has disconnected
