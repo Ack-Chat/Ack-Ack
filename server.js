@@ -35,10 +35,9 @@ MongoClient.connect(url, { useUnifiedTopology: true })
     console.log("Connected to Database");
     const db = client.db(dbName);
     const users = db.collection("users");
+    const messages = db.collection("messages");
 
     io.on("connection", (socket) => {
-      console.log(`${socket.id} connected`);
-      const connectedUsers = Object.keys(io.sockets.sockets);
       // get user's data from local storage
       io.to(socket.id).emit("get-user-data");
       socket.on("send-user-data", (data) => {
@@ -71,6 +70,14 @@ MongoClient.connect(url, { useUnifiedTopology: true })
           .catch((error) => console.error(error));
       });
 
+      messages
+        .find()
+        .toArray()
+        .then((results) => {
+          io.to(socket.id).emit("messages", results);
+        })
+        .catch((error) => console.error(error));
+
       // message received
       socket.on("message", (msg) => {
         users
@@ -80,6 +87,14 @@ MongoClient.connect(url, { useUnifiedTopology: true })
               msg.username = result.name;
               msg.time = moment().format("h:mm a");
               io.emit("message", msg);
+              messages
+                .insertOne({
+                  message: msg.message,
+                  username: msg.username,
+                  time: msg.time,
+                })
+                .then((result) => {})
+                .catch((error) => console.error(error));
             }
           })
           .catch((error) => console.error(error));
@@ -104,7 +119,6 @@ MongoClient.connect(url, { useUnifiedTopology: true })
                 name: username,
               })
               .then((result) => {
-                console.log(`${username} added to db`);
                 io.to(socket.id).emit("set-user-data", {
                   id: socket.id,
                   name: username,
@@ -126,7 +140,6 @@ MongoClient.connect(url, { useUnifiedTopology: true })
 
       // a user has disconnected
       socket.on("disconnect", () => {
-        console.log(`${socket.id} disconnected`);
         users
           .findOne({ id: socket.id })
           .then((result) => {
