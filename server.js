@@ -24,9 +24,19 @@ app.get("/", (req, res) => {
   res.send("index");
 });
 
-// Connection URL
-const url = "mongodb://localhost:27017";
+var user = encodeURIComponent("myUserAdmin");
+var password = encodeURIComponent("aabbcc");
+var authMechanism = "DEFAULT";
 
+// Connection URL
+//const url = "mongodb://localhost:27017";
+var f = require("util").format;
+const url = f(
+  "mongodb://%s:%s@localhost:27017/?authMechanism=%s",
+  user,
+  password,
+  authMechanism
+);
 // Database Name
 const dbName = "ackchat";
 
