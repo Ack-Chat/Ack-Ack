@@ -83,10 +83,11 @@ socket.on("message", (msg) => {
 // event listener for login form
 $("#login").submit((e) => {
   e.preventDefault();
+  localStorage.setItem("ackChatUsername", $("#username").val());
   $("#chat-section").toggleClass("hide");
   $("#chat-bar-container").toggleClass("hide");
   $("#username-form").toggleClass("hide");
-  if (localStorage.getItem("ackChatUsername") === null) {
+  if (localStorage.getItem("ackChatUsername") !== null) {
     socket.emit("new-user", localStorage.getItem("ackChatUsername"));
   }
   $("#message").focus();
