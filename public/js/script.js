@@ -16,6 +16,23 @@ $(() => {
   $("#username").focus();
 });
 
+// populate messages
+socket.on("messages", (messages) => {
+  messages.forEach((message) => {
+    if (message.username === localStorage.getItem("ackChatUsername")) {
+      addChat(
+        `${message.username}: ${message.message} - ${message.time}`,
+        "right"
+      );
+    } else {
+      addChat(
+        `${message.time} - ${message.username}: ${message.message}`,
+        "left"
+      );
+    }
+  });
+});
+
 // store user data in local storage
 socket.on("set-user-data", (data) => {
   localStorage.setItem("ackChatUserId", data.id);
@@ -46,12 +63,12 @@ $("#chat-bar").submit((e) => {
 });
 
 $("#message").keypress(function () {
-  socket.emit("typing", $("#username").val());
+  socket.emit("typing", localStorage.getItem("ackChatUsername"));
 });
 
 //listen for typing event
 socket.on("is typing", function (data) {
-  document.querySelector("#typing-output").innerHTML = `${data} is typing`;
+  document.querySelector("#typing-output").textContent = `${data} is typing`;
 });
 
 socket.on("message", (msg) => {
@@ -89,13 +106,10 @@ socket.on("new-user", (name, time) => {
 
 // update user list
 socket.on("user-list", (users) => {
-  console.log(users);
   $("#users-list").empty();
-  console.log($("#users-list"));
   users.forEach((user) => {
     $("#users-list").append($("<li>").text(user.name).addClass("p-2"));
   });
-  console.log($("#users-list"));
 });
 
 // send message when user leaves
