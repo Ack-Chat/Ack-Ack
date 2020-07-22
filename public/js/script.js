@@ -18,6 +18,7 @@ $(() => {
 
 // populate messages
 socket.on("messages", (messages) => {
+  $("#chat-list").empty();
   messages.forEach((message) => {
     if (message.username === localStorage.getItem("ackChatUsername")) {
       addChat(
