@@ -3,7 +3,6 @@ const chatMessages = document.getElementById("chat-list");
 
 var socket = io();
 let even = true;
-let username = "";
 
 if (localStorage.getItem("ackChatUserId") !== null) {
   $("#chat-section").toggleClass("hide");
@@ -73,7 +72,7 @@ socket.on("is typing", function (data) {
 });
 
 socket.on("message", (msg) => {
-  if (msg.username === username) {
+  if (msg.username === localStorage.getItem("ackChatUsername")) {
     addChat(`${msg.username}: ${msg.message} - ${msg.time}`, "right");
   } else {
     addChat(`${msg.time} - ${msg.username}: ${msg.message}`, "left");
@@ -84,12 +83,11 @@ socket.on("message", (msg) => {
 // event listener for login form
 $("#login").submit((e) => {
   e.preventDefault();
-  username = $("#username").val();
   $("#chat-section").toggleClass("hide");
   $("#chat-bar-container").toggleClass("hide");
   $("#username-form").toggleClass("hide");
   if (localStorage.getItem("ackChatUsername") === null) {
-    socket.emit("new-user", username);
+    socket.emit("new-user", localStorage.getItem("ackChatUsername"));
   }
   $("#message").focus();
   return false;
@@ -98,7 +96,7 @@ $("#login").submit((e) => {
 // add username message to chat list
 socket.on("new-user", (name, time) => {
   $("#users-list").append($("<li>").text(name));
-  if (name === username) {
+  if (name === localStorage.getItem("ackChatUsername")) {
     addChat(`${name} joined the chat - ${time}`, "right");
   } else {
     addChat(`${time} - ${name} joined the chat`, "left");
