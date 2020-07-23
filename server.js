@@ -27,12 +27,25 @@ app.get("/", (req, res) => {
   res.send("index");
 });
 
+// var user = encodeURIComponent("myUserAdmin");
+// var password = encodeURIComponent("aabbcc");
+// var authMechanism = "DEFAULT";
+
 // Connection URL
 const db_url =
   process.env.MONGOLAB_URI !== undefined
     ? process.env.MONGOLAB_URI
     : "mongodb://localhost:27017";
 
+// Connection URL
+//const url = "mongodb://localhost:27017";
+// var f = require("util").format;
+// const url = f(
+//   "mongodb://%s:%s@localhost:27017/?authMechanism=%s",
+//   user,
+//   password,
+//   authMechanism
+// );
 // Database Name
 const dbName =
   process.env.MONGOLAB_DBNAME !== undefined
@@ -156,23 +169,11 @@ MongoClient.connect(db_url, { useUnifiedTopology: true })
               .find({ loggedIn: true })
               .toArray()
               .then((results) => {
-                console.log(results);
                 io.emit("user-list", results);
               })
               .catch((error) => console.error(error));
           })
           .catch((error) => console.error(error));
-        // users
-        //   .findOne({ id: socket.id })
-        //   .then((result) => {
-        //     console.log(result);
-        //     if (result != undefined) {
-        //       result.time = moment().format("h:mm a");
-        //       io.emit("user-left", result);
-
-        //     }
-        //   })
-        //   .catch((error) => console.error(error));
       });
     });
   })
