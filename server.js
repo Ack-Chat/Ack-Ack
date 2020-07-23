@@ -50,29 +50,21 @@ MongoClient.connect(db_url, { useUnifiedTopology: true })
       // get user's data from local storage
       io.to(socket.id).emit("get-user-data");
       socket.on("send-user-data", (data) => {
-        // delete all users with user name
+        // set user to logged in
         users
-          .deleteMany({ name: data.name })
+          .findOneAndUpdate(
+            { name: data.name },
+            { $set: { loggedIn: true, id: socket.id } }
+          )
           .then((result) => {
-            // insert one user with user data
+            io.to(socket.id).emit("set-user-data", result.value);
+            // send out logged in users list
             users
-              .insertOne({
-                id: socket.id,
-                name: data.name,
-              })
-              .then((result) => {
-                io.to(socket.id).emit("set-user-data", {
-                  id: socket.id,
-                  name: data.name,
-                });
-                // send out new user-list
-                users
-                  .find()
-                  .toArray()
-                  .then((results) => {
-                    io.emit("user-list", results);
-                  })
-                  .catch((error) => console.error(error));
+              .find({ loggedIn: true })
+              .toArray()
+              .then((results) => {
+                io.emit("user-list", results);
+                io.emit("new-user", data.name, moment().format("h:mm a"));
               })
               .catch((error) => console.error(error));
           })
@@ -87,12 +79,47 @@ MongoClient.connect(db_url, { useUnifiedTopology: true })
         })
         .catch((error) => console.error(error));
 
+      // validate username
+      socket.on("validate-username", (username) => {
+        users.findOne({ name: username }).then((user) => {
+          io.to(socket.id).emit("validate-username", user);
+        });
+      });
+
+      // we have a new user
+      socket.on("new-user", (username, time) => {
+        socket.username = username;
+        time = moment().format("h:mm a");
+        users
+          .insertOne({
+            id: socket.id,
+            name: username,
+            loggedIn: true,
+          })
+          .then((result) => {
+            io.to(socket.id).emit("set-user-data", {
+              id: socket.id,
+              name: username,
+            });
+            io.emit("new-user", username, time);
+            // send user list back to all users
+            users
+              .find({ loggedIn: true })
+              .toArray()
+              .then((results) => {
+                io.emit("user-list", results);
+              })
+              .catch((error) => console.error(error));
+          })
+          .catch((error) => console.error(error));
+      });
+
       // message received
       socket.on("message", (msg) => {
         users
           .findOne({ id: socket.id })
           .then((result) => {
-            if (result != undefined) {
+            if (result !== undefined) {
               msg.username = result.name;
               msg.time = moment().format("h:mm a");
               io.emit("message", msg);
@@ -114,62 +141,38 @@ MongoClient.connect(db_url, { useUnifiedTopology: true })
         socket.broadcast.emit("is typing", data);
       });
 
-      // we have a new user
-      socket.on("new-user", (username, time) => {
-        socket.username = username;
-        time = moment().format("h:mm a");
+      // a user has disconnected
+      socket.on("disconnect", () => {
         users
-          .deleteMany({ name: username })
+          .findOneAndUpdate({ id: socket.id }, { $set: { loggedIn: false } })
           .then((result) => {
-            // add user to db
+            const user = {
+              id: result.value.id,
+              name: result.value.name,
+              time: moment().format("h:mm a"),
+            };
+            io.emit("user-left", user);
             users
-              .insertOne({
-                id: socket.id,
-                name: username,
-              })
-              .then((result) => {
-                io.to(socket.id).emit("set-user-data", {
-                  id: socket.id,
-                  name: username,
-                });
-                io.emit("new-user", username, time);
-                // send user list back to all users
-                users
-                  .find()
-                  .toArray()
-                  .then((results) => {
-                    io.emit("user-list", results);
-                  })
-                  .catch((error) => console.error(error));
+              .find({ loggedIn: true })
+              .toArray()
+              .then((results) => {
+                console.log(results);
+                io.emit("user-list", results);
               })
               .catch((error) => console.error(error));
           })
           .catch((error) => console.error(error));
-      });
+        // users
+        //   .findOne({ id: socket.id })
+        //   .then((result) => {
+        //     console.log(result);
+        //     if (result != undefined) {
+        //       result.time = moment().format("h:mm a");
+        //       io.emit("user-left", result);
 
-      // a user has disconnected
-      socket.on("disconnect", () => {
-        users
-          .findOne({ id: socket.id })
-          .then((result) => {
-            if (result != undefined) {
-              result.time = moment().format("h:mm a");
-              io.emit("user-left", result);
-            }
-          })
-          .catch((error) => console.error(error));
-        users
-          .deleteMany({ id: socket.id })
-          .then((result) => {})
-          .catch((error) => console.error(error));
-        // send user list back to all users
-        users
-          .find()
-          .toArray()
-          .then((results) => {
-            io.emit("user-list", results);
-          })
-          .catch((error) => console.error(error));
+        //     }
+        //   })
+        //   .catch((error) => console.error(error));
       });
     });
   })
