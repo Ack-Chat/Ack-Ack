@@ -19,16 +19,16 @@ body {
 }
 
 .container-1 {
-  max-height: calc(100vh - 117px);
+  max-height: calc(100vh - 135px);
   overflow: hidden;
 }
 
 #chat-messages {
-  max-height: calc(100vh - 117px);
+  max-height: calc(100vh - 135px);
 }
 
 #chat-list {
-  max-height: calc(100vh - 158px);
+  max-height: calc(100vh - 175px);
 
   overflow-y: scroll;
   margin-bottom: 0;
