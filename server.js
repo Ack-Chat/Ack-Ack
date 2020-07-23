@@ -77,7 +77,11 @@ MongoClient.connect(db_url, { useUnifiedTopology: true })
               .toArray()
               .then((results) => {
                 io.emit("user-list", results);
-                io.emit("new-user", data.name, moment().format("h:mm a"));
+                io.emit(
+                  "new-user",
+                  data.name,
+                  moment().utcOffset(-7).format("h:mm a")
+                );
               })
               .catch((error) => console.error(error));
           })
@@ -102,7 +106,7 @@ MongoClient.connect(db_url, { useUnifiedTopology: true })
       // we have a new user
       socket.on("new-user", (username, time) => {
         socket.username = username;
-        time = moment().format("h:mm a");
+        time = moment().utcOffset(-7).format("h:mm a");
         users
           .insertOne({
             id: socket.id,
@@ -134,7 +138,7 @@ MongoClient.connect(db_url, { useUnifiedTopology: true })
           .then((result) => {
             if (result !== undefined) {
               msg.username = result.name;
-              msg.time = moment().format("h:mm a");
+              msg.time = moment().utcOffset(-7).format("h:mm a");
               io.emit("message", msg);
               messages
                 .insertOne({
@@ -162,7 +166,7 @@ MongoClient.connect(db_url, { useUnifiedTopology: true })
             const user = {
               id: result.value.id,
               name: result.value.name,
-              time: moment().format("h:mm a"),
+              time: moment().utcOffset(-7).format("h:mm a"),
             };
             io.emit("user-left", user);
             users
