@@ -4,32 +4,32 @@ const chatMessages = document.getElementById("chat-list");
 var socket = io();
 let even = true;
 
-if (localStorage.getItem("ackChatUserId") !== null) {
-  $("#chat-section").toggleClass("hide");
-  $("#chat-bar-container").toggleClass("hide");
-  $("#username-form").toggleClass("hide");
-  $("#message").focus();
-}
-
 $(() => {
-  $("#username").focus();
-});
+  if (localStorage.getItem("ackChatUserId") !== null) {
+    $("#chat-section").toggleClass("hide");
+    $("#chat-bar-container").toggleClass("hide");
+    $("#username-form").toggleClass("hide");
+    $("#message").focus();
+  } else {
+    $("#username").focus();
+  }
 
-// populate messages
-socket.on("messages", (messages) => {
-  $("#chat-list").empty();
-  messages.forEach((message) => {
-    if (message.username === localStorage.getItem("ackChatUsername")) {
-      addChat(
-        `${message.username}: ${message.message} - ${message.time}`,
-        "right"
-      );
-    } else {
-      addChat(
-        `${message.time} - ${message.username}: ${message.message}`,
-        "left"
-      );
-    }
+  // populate messages
+  socket.on("messages", (messages) => {
+    $("#chat-list").empty();
+    messages.forEach((message) => {
+      if (message.username === localStorage.getItem("ackChatUsername")) {
+        addChat(
+          `${message.username}: ${message.message} - ${message.time}`,
+          "right"
+        );
+      } else {
+        addChat(
+          `${message.time} - ${message.username}: ${message.message}`,
+          "left"
+        );
+      }
+    });
   });
 });
 
@@ -44,6 +44,56 @@ socket.on("get-user-data", () => {
       name: localStorage.getItem("ackChatUsername"),
     });
   }
+});
+
+// store user data in local storage
+socket.on("set-user-data", (data) => {
+  localStorage.setItem("ackChatUserId", data.id);
+  localStorage.setItem("ackChatUsername", data.name);
+});
+
+// event listener for login form
+$("#login").submit((e) => {
+  e.preventDefault();
+  localStorage.setItem("ackChatUsername", $("#username").val());
+  socket.emit("validate-username", $("#username").val());
+});
+
+socket.on("validate-username", (validation) => {
+  if (validation === null) {
+    $("#username-alert").addClass("hide");
+    $("#username").removeClass("border-danger");
+    $("#chat-section").removeClass("hide");
+    $("#chat-bar-container").removeClass("hide");
+    $("#username-form").addClass("hide");
+    $("#username-form").addClass("mt-4");
+    socket.emit("new-user", localStorage.getItem("ackChatUsername"));
+    $("#message").focus();
+  } else {
+    const username = $("#username").val();
+    $("#username").addClass("border-danger");
+    $("#username-alert").text(`${username} already taken!`);
+    $("#username-alert").removeClass("hide");
+    $("#username-form").removeClass("mt-4");
+  }
+  return false;
+});
+
+// add username message to chat list
+socket.on("new-user", (name, time) => {
+  if (name === localStorage.getItem("ackChatUsername")) {
+    addChat(`${name} joined the chat - ${time}`, "right");
+  } else {
+    addChat(`${time} - ${name} joined the chat`, "left");
+  }
+});
+
+// update user list
+socket.on("user-list", (users) => {
+  $("#users-list").empty();
+  users.forEach((user) => {
+    $("#users-list").append($("<li>").text(user.name).addClass("p-2"));
+  });
 });
 
 $("#chat-bar").submit((e) => {
@@ -72,56 +122,6 @@ socket.on("message", (msg) => {
     addChat(`${msg.time} - ${msg.username}: ${msg.message}`, "left");
   }
   document.querySelector("#typing-output").innerHTML = "";
-});
-
-// event listener for login form
-$("#login").submit((e) => {
-  e.preventDefault();
-  localStorage.setItem("ackChatUsername", $("#username").val());
-  if (localStorage.getItem("ackChatUsername") !== null) {
-    socket.emit("new-user", localStorage.getItem("ackChatUsername"));
-  }
-});
-
-socket.on("user-exist", (data) => {
-  if (data.existed === true) {
-    //console.log("receving existing");
-    //localStorage.setItem("ackChatUserId", null);
-    window.alert("Please choose a different name");
-    return false;
-  } else if (data.existed === false) {
-    //e.preventDefault();
-    //console.log("recevie not exiting");
-    $("#chat-section").toggleClass("hide");
-    $("#chat-bar-container").toggleClass("hide");
-    $("#username-form").toggleClass("hide");
-
-    $("#message").focus();
-  }
-});
-
-// store user data in local storage
-socket.on("set-user-data", (data) => {
-  localStorage.setItem("ackChatUserId", data.id);
-  localStorage.setItem("ackChatUsername", data.name);
-});
-
-// add username message to chat list
-socket.on("new-user", (name, time) => {
-  $("#users-list").append($("<li>").text(name));
-  if (name === localStorage.getItem("ackChatUsername")) {
-    addChat(`${name} joined the chat - ${time}`, "right");
-  } else {
-    addChat(`${time} - ${name} joined the chat`, "left");
-  }
-});
-
-// update user list
-socket.on("user-list", (users) => {
-  $("#users-list").empty();
-  users.forEach((user) => {
-    $("#users-list").append($("<li>").text(user.name).addClass("p-2"));
-  });
 });
 
 // send message when user leaves
